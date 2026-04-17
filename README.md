@@ -25,6 +25,12 @@ O sistema e composto pelas sub-pecas:
 > - **Exigencia de TLS Secure Connection**: Mesmo que o pacote esteja encriptado localmente, a ponte Windows Socket TCP requer conexao TLS (Transport Layer Security) para imunizar totalmente Sniffers e Handshakes falsos via Wireshark.
 > - **Threads Isolados vs. Thread Hijacking**: Em um cenario global, injetores de memoria conseguem dropar "suspend thread" da arvore de processamento que nosso AntiCheat usa para espionar a memoria em runtime. Para uma escalabilidade de producao e ideal usar protecoes por Ring-0 (Kernel) ou validar com TLS Callback.
 
+> [!WARNING]
+> **Recomendação Pessoal**: Todas as chamadas devem vir do servidor sempre, absolutamente sempre, sem exceção. Dessa forma, qualquer tentativa de manipulação, como thread suspend, DLL replacement ou outros tipos de ataque, torna-se ineficaz, já que a lógica crítica não está no cliente.
+> Qualquer anormalidade identificada deve resultar no corte imediato da conexão por parte do servidor. Não é necessário aplicar kick ou qualquer ação explícita: basta encerrar o canal de comunicação (pipe). Naturalmente, o cliente será desconectado ao parar de receber pacotes do servidor.
+> Vale reforçar: todas as chamadas devem ser originadas no servidor. Threads no cliente podem ser sequestradas e responder de forma aparentemente válida, o que compromete a confiança no lado do cliente.
+> Por esse motivo, também é altamente recomendável distribuir (spread) a lógica em múltiplos módulos. Isso aumenta significativamente o custo e a complexidade de engenharia reversa, dificultando a análise e exploração do sistema.
+
 ## 🛠 Como Compilar
 Nao requer configuracao profunda por CMake. Utilizamos os compiladores puros da Microsoft atravez do **Visual Studio 2019/2022/2026 Developer Command Prompt**.
 
